@@ -1,0 +1,37 @@
+body {
+  font-family: Arial;
+  background: #fff;
+  margin: 0;
+  padding: 20px;
+}
+
+textarea {
+  width: 100%;
+  height: 80px;
+  margin: 10px 0;
+}
+
+input[type="text"],
+select {
+  margin: 5px 0;
+  padding: 6px;
+}
+
+button {
+  background-color: #7355f7;
+  color: white;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.teacher, .student {
+  max-width: 600px;
+  margin: auto;
+}
+
+.student input[type="radio"] {
+  margin-right: 6px;
+}
