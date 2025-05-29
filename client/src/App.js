@@ -1,32 +1,26 @@
-import React, { useState } from "react";
+// App.js
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import TeacherView from "./components/TeacherView";
 import StudentView from "./components/StudentView";
-import "./App.css"; // Import the CSS you’ll define next
 
 function App() {
-  const [role, setRole] = useState(null);
-
   return (
-    <div>
-      {!role ? (
-        <div className="landing-container">
-          <h1>Welcome to Live Polling App</h1>
-          <p className="subtitle">Real-time polls for classrooms, events, and more!</p>
-          <div className="role-buttons">
-            <button className="role-btn" onClick={() => setRole("teacher")}>
-              I am a Teacher
-            </button>
-            <button className="role-btn" onClick={() => setRole("student")}>
-              I am a Student
-            </button>
-          </div>
-        </div>
-      ) : role === "teacher" ? (
-        <TeacherView />
-      ) : (
-        <StudentView />
-      )}
-    </div>
+    <Router>
+      <div>
+        {/* Optional: Navigation */}
+        <nav style={{ marginBottom: "20px" }}>
+          <Link to="/teacher" style={{ marginRight: "15px" }}>👩‍🏫 Teacher</Link>
+          <Link to="/student">🧑‍🎓 Student</Link>
+        </nav>
+
+        <Routes>
+          <Route path="/teacher" element={<TeacherView />} />
+          <Route path="/student" element={<StudentView />} />
+          <Route path="*" element={<h2>Welcome! Choose a view above.</h2>} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

@@ -1,71 +1,85 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+// 🔌 Connect to backend
+const socket = io("http://localhost:5000"); // Make sure port matches your backend
 
-const StudentView = () => {
-  const [name, setName] = useState("");
-  const [question, setQuestion] = useState(null);
+function StudentView() {
+  const [currentQuestion, setCurrentQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [hasAnswered, setHasAnswered] = useState(false);
+  const [timer, setTimer] = useState(0);
 
   useEffect(() => {
-    socket.on("newQuestion", (q) => {
-      setQuestion(q);
-      setSubmitted(false);
+    // 👂 Listen for new question
+    socket.on("newQuestion", (data) => {
+      console.log("Received Question:", data); // ✅ Should print object
+      setCurrentQuestion(data);
+      setHasAnswered(false);
+      setSelectedOption("");
+      setTimer(data.timeLimit); // Example: 60
     });
 
+    // ⏱ Countdown timer
+    const interval = setInterval(() => {
+      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
     return () => {
+      clearInterval(interval);
       socket.off("newQuestion");
     };
   }, []);
 
-  const handleSubmit = () => {
-    if (selectedOption) {
-      socket.emit("submitAnswer", {
-        studentName: name,
-        answer: selectedOption,
-      });
-      setSubmitted(true);
-    }
+  const handleAnswer = (option) => {
+    if (hasAnswered) return;
+
+    setSelectedOption(option);
+    setHasAnswered(true);
+
+    socket.emit("submitAnswer", { answer: option });
   };
 
-  if (!name) {
-    return (
-      <div style={{ padding: "2rem" }}>
-        <h2>Enter your name</h2>
-        <input onChange={(e) => setName(e.target.value)} />
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Welcome, {name}</h1>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>👨‍🎓 Student View</h1>
 
-      {!question ? (
-        <p>Waiting for the teacher to ask a question...</p>
-      ) : submitted ? (
-        <p>Answer submitted. Waiting for results...</p>
+      {!currentQuestion ? (
+        <h2>No question yet...</h2>
       ) : (
         <div>
-          <h2>{question.question}</h2>
-          {question.options.map((opt, i) => (
-            <div key={i}>
-              <input
-                type="radio"
-                name="option"
-                value={opt}
-                onChange={(e) => setSelectedOption(e.target.value)}
-              />
-              {opt}
-            </div>
-          ))}
-          <button onClick={handleSubmit}>Submit Answer</button>
+          <h2>{currentQuestion.question}</h2>
+
+          <ul style={{ listStyleType: "none", padding: 0 }}>
+            {currentQuestion.options.map((option, index) => (
+              <li key={index} style={{ margin: "10px" }}>
+                <button
+                  onClick={() => handleAnswer(option)}
+                  disabled={hasAnswered}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor:
+                      hasAnswered && selectedOption === option
+                        ? "lightgreen"
+                        : "#e0e0e0",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: hasAnswered ? "not-allowed" : "pointer",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {option}
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <p>Time left: {timer}s</p>
+          {hasAnswered && <p>Answer submitted!</p>}
         </div>
       )}
     </div>
   );
-};
+}
 
 export default StudentView;
